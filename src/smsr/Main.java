@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.swing.JFrame;
+
 /**
  * Main.java
  * 
@@ -47,7 +49,7 @@ public class Main {
 		MenuItem miCheck = new MenuItem("Check Mail");
 		MenuItem miTell = new MenuItem("Tell Me Again");
 		MenuItem miView = new MenuItem("View Mail");
-		MenuItem miLogin = new MenuItem("Login");
+		MenuItem miLogin = new MenuItem("Options");
 		MenuItem miExit = new MenuItem("Exit");
 		
 		menu.add(miCheck);
@@ -110,8 +112,10 @@ public class Main {
 		
 		miLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Login");
-				// Still to be implemented
+				System.out.println("Options");
+				JFrame f = OptionPanel.getOptionPanel();
+				f.pack();
+				f.setVisible(true);
 			}
 		});
 		
