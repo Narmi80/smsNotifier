@@ -307,4 +307,12 @@ public class GmailNotifier implements MessageCountListener, MessageChangedListen
 		} // getPasswordAuthentication
 	} // The Authenticator
 
+	/**
+	 * reloadData
+	 *
+	 */
+	public void reloadData() {
+		
+	} // reloadData
+
 } // GmailNotifier

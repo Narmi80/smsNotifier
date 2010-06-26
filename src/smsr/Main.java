@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 
@@ -67,7 +68,13 @@ public class Main {
 		}
 		
 		trayIcon.setPopupMenu(menu);
-		final GmailNotifier gNotifier = new GmailNotifier(args[0], args[1], args[2], trayIcon);
+		
+		Preferences prefs = Preferences.userRoot().node("smsSettings");
+		String user = prefs.get("user", "");
+		String pass = prefs.get("pass", "");
+		String cell = prefs.get("cell", "");
+		
+		final GmailNotifier gNotifier = new GmailNotifier(user, pass, cell, trayIcon);
 		
 		trayIcon.addActionListener(new ActionListener() {
 			/**
@@ -113,9 +120,8 @@ public class Main {
 		miLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Options");
-				JFrame f = OptionPanel.getOptionPanel();
-				f.pack();
-				f.setVisible(true);
+				OptionPanel.getOptionPanel();
+				gNotifier.reloadData();
 			}
 		});
 		

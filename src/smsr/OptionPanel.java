@@ -4,6 +4,8 @@
 package smsr;
 
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
@@ -29,10 +31,10 @@ public class OptionPanel {
 		
 	} // constructor
 	
-	public static JFrame getOptionPanel() {
-		Preferences prefs = Preferences.userRoot().node("smsSettings");
+	public static void getOptionPanel() {
+		final Preferences prefs = Preferences.userRoot().node("smsSettings");
 		
-		JFrame frame = new JFrame("Options");
+		final JFrame frame = new JFrame("Options");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		JFrame.setDefaultLookAndFeelDecorated(true);
 		
@@ -43,10 +45,10 @@ public class OptionPanel {
 		
 		JLabel label1 = new JLabel("Username:");
 		JLabel label2 = new JLabel("Password:");
-		JTextField username = new JTextField(6);
-		username.setText(prefs.get("user", null));
-		JPasswordField password = new JPasswordField(6);
-		password.setText(prefs.get("pass", null));
+		final JTextField username = new JTextField(6);
+		username.setText(prefs.get("user", ""));
+		final JPasswordField password = new JPasswordField(6);
+		password.setText(prefs.get("pass", ""));
 		login.add(label1);
 		login.add(username);
 		login.add(label2);
@@ -57,9 +59,9 @@ public class OptionPanel {
 		
 		JLabel label3 = new JLabel("Ping Rate:");
 		JLabel label4 = new JLabel("Pop-up Notifications:");
-		JTextField rate = new JTextField();
+		final JTextField rate = new JTextField();
 		rate.setText(prefs.get("rate", "5"));
-		JCheckBox box = new JCheckBox();
+		final JCheckBox box = new JCheckBox();
 		box.setSelected(prefs.getBoolean("notify", true));
 		settings.add(label3);
 		settings.add(rate);
@@ -76,9 +78,28 @@ public class OptionPanel {
 		mainPanel.add(settings);
 		mainPanel.add(buttons);
 		frame.add(mainPanel);
-		//frame.pack();
 		frame.setLocationRelativeTo(null);
-		return frame;
+		frame.pack();
+		frame.setVisible(true);
+		
+		save.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				prefs.put("user", username.getText());
+				prefs.put("pass", password.getSelectedText());
+				prefs.put("rate", rate.getText());
+				prefs.putBoolean("notify", box.isSelected());
+				frame.setVisible(false);
+			}
+		});
+		
+		cancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				frame.setVisible(false);
+			}
+		});
+		
 	} // getOptionPanel
 	
 } // OptionPanel
