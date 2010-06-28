@@ -1,14 +1,13 @@
+/**
+ * 
+ */
 package smsr;
 
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 
 import javax.mail.Address;
-import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
@@ -16,102 +15,33 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
-import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
-import javax.mail.Store;
 import javax.mail.Transport;
-import javax.mail.event.MessageChangedEvent;
-import javax.mail.event.MessageChangedListener;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.swing.JFrame;
 
 /**
- * GmailNotifier.java
+ * MessageListener.java
  * 
  * @author Collin Price
  * @contact collin.price@gmail.com
  * @website http://collinprice.com
- * @date 2010-06-22
+ * @date Jun 28, 2010
  */
-public class GmailNotifier implements MessageCountListener, MessageChangedListener {
-
-	private static String imapHost = "imap.gmail.com";
-	private static String imapPort = "993";
-	private static String smtpHost = "smtp.gmail.com";
-	private static String smtpPort = "465";
+public class MessageListener implements MessageCountListener {
 	
-	private static Session session;
-	private static TrayIcon trayIcon;
-	private static KnockThread knocker;
-	private Message lastNewMsg;
-	private static Folder folder;
+	private static final String smtpHost = "smtp.gmail.com";
+	private static final String smtpPort = "465";
 	
-	public GmailNotifier(TrayIcon trayIcon) throws IllegalStateException, AuthenticationFailedException {
-		this.trayIcon = trayIcon;
-		connect();
+	private static Message lastNewMsg;
+	private Folder folder;
+	
+	public MessageListener (Folder folder) {
+		this.folder = folder;
 	} // constructor
-	
-	public static void connect() throws IllegalStateException {
-		Preferences prefs = Preferences.userRoot().node("smsSettings");
-		
-		String user = prefs.get("user", "");
-		String pass = prefs.get("pass", "");
-		
-		session = Session.getInstance(getIMAPProperties());
-		
-		Store store = null;
-		folder = null;
-		
-		try {
-			store = session.getStore("imap");
-			store.connect(user, pass);
-			
-			folder = store.getFolder("Inbox");
-			folder.open(Folder.READ_WRITE);
-			
-			knocker = new KnockThread(folder, trayIcon);
-			knocker.start();
-			
-			folder.addMessageCountListener(new MessageListener(folder));
-		} catch (NoSuchProviderException e) {
-			System.err.println("imap provider does not exist.");
-			e.printStackTrace();
-		} catch (AuthenticationFailedException e) {
-			System.err.println("imap authentication failure. bad username or password.");
-			OptionPanel.getOptionPanel();
-			System.out.println("Optionpanel loaded...");
-		} catch (MessagingException e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
-		
-	} // connect
-	
-	private static Properties getIMAPProperties() {
-		Properties props = System.getProperties();
-		props.setProperty("mail.imap.host", imapHost);
-		props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-		props.setProperty("mail.imap.socketFactory.fallback", "false");
-		props.setProperty("mail.imap.socketFactory.port", imapPort);
-		return props;
-	} // getIMAPProperties
-	
-	private Properties getSMTPProperties() {
-		Preferences prefs = Preferences.userRoot().node("smsSettings");
-		Properties props = System.getProperties();
-		props.setProperty("mail.transport.protocol", "smtp");
-		props.setProperty("mail.smtp.user", prefs.get("user", ""));
-		props.setProperty("mail.smtp.host", smtpHost);
-		props.setProperty("mail.smtp.password", prefs.get("pass", ""));
-		props.setProperty("mail.smtp.socketFactory.port", smtpPort);
-		props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-		props.setProperty("mail.smtp.socketFactory.fallback", "false");
-		return props;
-	} // getSMTPProperties
 	
 	/* (non-Javadoc)
 	 * @see javax.mail.event.MessageCountListener#messagesAdded(javax.mail.event.MessageCountEvent)
@@ -264,51 +194,18 @@ public class GmailNotifier implements MessageCountListener, MessageChangedListen
 		// not yet implemented
 	} // messagesRemoved
 
-	/* (non-Javadoc)
-	 * @see javax.mail.event.MessageChangedListener#messageChanged(javax.mail.event.MessageChangedEvent)
-	 */
-	@Override
-	public void messageChanged(MessageChangedEvent e) {
-		
-	} // messageChanged
-
-	/**
-	 * notifyDetector
-	 *
-	 */
-	public void notifyDetector() {
-		synchronized(knocker) {
-			knocker.notify();
-		}
-	} // notifyDetector
-
-	/**
-	 * tellDetector
-	 *
-	 */
-	public void tellDetector() {
-		synchronized(knocker) {
-			knocker.forceNotification();
-			knocker.notify();
-		}
-	} // tellDetector
-
-	/**
-	 * exit
-	 *
-	 */
-	public static void exit() {
-		synchronized(knocker) {
-			knocker.stopKnocking();
-			knocker.notify();
-		}
-		try {
-			folder.close(false);
-			
-		} catch (MessagingException e) {
-		}
-		folder = null;
-	} // exit
+	private Properties getSMTPProperties() {
+		Preferences prefs = Preferences.userRoot().node("smsSettings");
+		Properties props = System.getProperties();
+		props.setProperty("mail.transport.protocol", "smtp");
+		props.setProperty("mail.smtp.user", prefs.get("user", ""));
+		props.setProperty("mail.smtp.host", smtpHost);
+		props.setProperty("mail.smtp.password", prefs.get("pass", ""));
+		props.setProperty("mail.smtp.socketFactory.port", smtpPort);
+		props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		props.setProperty("mail.smtp.socketFactory.fallback", "false");
+		return props;
+	} // getSMTPProperties
 	
 	private class TheAuthenticator extends Authenticator {
 		public PasswordAuthentication getPasswordAuthentication() {
@@ -316,14 +213,5 @@ public class GmailNotifier implements MessageCountListener, MessageChangedListen
 			return new PasswordAuthentication(prefs.get("user", ""), prefs.get("pass", ""));
 		} // getPasswordAuthentication
 	} // The Authenticator
-
-	/**
-	 * reloadData
-	 *
-	 */
-	public static void reloadData() {
-		exit();
-		connect();
-	} // reloadData
-
-} // GmailNotifier
+	
+} // MessageListener

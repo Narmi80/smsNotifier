@@ -16,9 +16,8 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.prefs.Preferences;
 
-import javax.swing.JFrame;
+import javax.mail.AuthenticationFailedException;
 
 /**
  * Main.java
@@ -69,12 +68,16 @@ public class Main {
 		
 		trayIcon.setPopupMenu(menu);
 		
-		Preferences prefs = Preferences.userRoot().node("smsSettings");
-		String user = prefs.get("user", "");
-		String pass = prefs.get("pass", "");
-		String cell = prefs.get("cell", "");
+		GmailNotifier tempNotifier = null;
+		try {
+			tempNotifier = new GmailNotifier(trayIcon);
+		} catch (IllegalStateException e2) {
+			e2.printStackTrace();
+		} catch (AuthenticationFailedException e2) {
+			e2.printStackTrace();
+		}
 		
-		final GmailNotifier gNotifier = new GmailNotifier(user, pass, cell, trayIcon);
+		final GmailNotifier gNotifier = tempNotifier;
 		
 		trayIcon.addActionListener(new ActionListener() {
 			/**
@@ -121,7 +124,6 @@ public class Main {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Options");
 				OptionPanel.getOptionPanel();
-				gNotifier.reloadData();
 			}
 		});
 		
@@ -136,7 +138,6 @@ public class Main {
 			}
 		});
 	} // main
-
 
 	/**
 	 * openBrowser

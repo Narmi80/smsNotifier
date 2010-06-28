@@ -62,7 +62,7 @@ public class OptionPanel {
 		final JTextField rate = new JTextField();
 		rate.setText(prefs.get("rate", "5"));
 		final JCheckBox box = new JCheckBox();
-		box.setSelected(prefs.getBoolean("notify", true));
+		box.setSelected(prefs.getBoolean("notify", false));
 		settings.add(label3);
 		settings.add(rate);
 		settings.add(label4);
@@ -86,9 +86,10 @@ public class OptionPanel {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				prefs.put("user", username.getText());
-				prefs.put("pass", password.getSelectedText());
+				prefs.put("pass", new String(password.getPassword()));
 				prefs.put("rate", rate.getText());
 				prefs.putBoolean("notify", box.isSelected());
+				GmailNotifier.reloadData();
 				frame.setVisible(false);
 			}
 		});
